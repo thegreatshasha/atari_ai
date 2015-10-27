@@ -5,6 +5,8 @@ import numpy as np
 ale = ALEInterface()
 ale.loadROM('/Users/shashwat/Downloads/space_invaders.bin')
 
+import pdb; pdb.set_trace()
+
 # These are the set of valid actions in the game
 legal_actions = ale.getMinimalActionSet()
 
