@@ -1,11 +1,16 @@
 from ale_python_interface import ALEInterface
 import numpy as np
+import pygame
 
 # Create the ale interface and load rom files
 ale = ALEInterface()
-ale.loadROM('/Users/shashwat/Downloads/space_invaders.bin')
 
-import pdb; pdb.set_trace()
+# Comment this to disable gui
+ale.setBool('display_screen', True)
+pygame.init()
+
+# Load the rom
+ale.loadROM('/Users/shashwat/Downloads/space_invaders.bin')
 
 # These are the set of valid actions in the game
 legal_actions = ale.getMinimalActionSet()
