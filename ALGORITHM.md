@@ -21,3 +21,5 @@ Initialise sequence s1 = {x1} and preprocessed sequenced φ1 = φ(s1)
         Perform a gradient descent step on (yj − Q(φj , aj ; θ))2 according to equation 3
     end for
 end for
+
+https://github.com/spragunr/deep_q_rl/blob/d25cb151bfb1d1b0e9302e5483ceef2cd6245e99/deep_q_rl/ale_data_set.py#L79 for understanding phi
