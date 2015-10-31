@@ -23,3 +23,5 @@ Initialise sequence s1 = {x1} and preprocessed sequenced φ1 = φ(s1)
 end for
 
 https://github.com/spragunr/deep_q_rl/blob/d25cb151bfb1d1b0e9302e5483ceef2cd6245e99/deep_q_rl/ale_data_set.py#L79 for understanding phi
+
+Understand the dataset file: https://github.com/spragunr/deep_q_rl/blob/d25cb151bfb1d1b0e9302e5483ceef2cd6245e99/deep_q_rl/ale_data_set.py#L79
