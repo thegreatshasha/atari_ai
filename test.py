@@ -29,10 +29,19 @@ width, height = ale.getScreenDims()
 screen_buffer = np.empty((height, width), dtype=np.uint8)
 
 # Define history variables here
+images = []
 
 # Initialize a neural network according to nature paper
 # Defining the neural net architecture
-
+model = Sequential()
+model.add(Convolution2D(16, 8, 8, input_shape=(4, 84, 84), subsample=(4,4)))
+model.add(Activation('relu'))
+model.add(Convolution2D(32, 4, 4), subsample=(2,2))
+model.add(Activation('relu'))
+model.add(Flatten())
+model.add(Dense(256))
+model.add(Activation('relu'))
+model.add(Dense(10))
 
 # Version1, let it grow, let it grow
 for episode in range(10):
@@ -51,6 +60,8 @@ for episode in range(10):
         ale.getScreenGrayscale(screen_buffer)
 
         awesome_image = resize_image(screen_buffer, width, height, RESIZED_WIDTH, RESIZED_HEIGHT, CROP_OFFSET, resize_method = 'crop')
+        images.append(awesome_image)
+        import pdb; pdb.set_trace()
 
     print("Episode " + str(episode) + " ended with score: " + str(total_reward))
     ale.reset_game()
