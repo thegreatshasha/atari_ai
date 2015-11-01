@@ -2,6 +2,10 @@ from ale_python_interface import ALEInterface
 import numpy as np
 import pygame
 from helpers import resize_image
+import keras
+from keras.models import Sequential
+from keras.layers.core import Dense, Activation, Flatten
+from keras.layers.convolutional import Convolution2D
 
 # Create the ale interface and load rom files
 ale = ALEInterface()
@@ -34,14 +38,15 @@ images = []
 # Initialize a neural network according to nature paper
 # Defining the neural net architecture
 model = Sequential()
-model.add(Convolution2D(16, 8, 8, input_shape=(4, 84, 84), subsample=(4,4)))
+model.add(Convolution2D(16, 8, 8, subsample=(4,4), input_shape=(4,84,84)))
 model.add(Activation('relu'))
-model.add(Convolution2D(32, 4, 4), subsample=(2,2))
+model.add(Convolution2D(32, 4, 4, subsample=(2,2)))
 model.add(Activation('relu'))
 model.add(Flatten())
 model.add(Dense(256))
 model.add(Activation('relu'))
-model.add(Dense(10))
+model.add(Dense(legal_actions.shape[0]))
+import pdb; pdb.set_trace()
 
 # Version1, let it grow, let it grow
 for episode in range(10):
