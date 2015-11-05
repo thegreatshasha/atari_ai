@@ -48,6 +48,8 @@ sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(loss='mean_squared_error', optimizer=sgd)
 ## will SGD work with multiple function calls?
 
+import pdb; pdb.set_trace()
+
 # Version1, let it grow, let it grow
 for episode in range(10):
     total_reward = 0.0
@@ -66,6 +68,7 @@ for episode in range(10):
         reward = ale.act(best_action);
         total_reward += reward
 
+        # check if game over
         #if total_reward != 0:
         #import pdb; pdb.set_trace()
 
