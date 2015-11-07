@@ -5,23 +5,33 @@ import timeit
 
 class RingBuffer():
 
-    def __init__(self, size):
-        self.size = size
+    def __init__(self, shape, dtype=np.int):
+        self.shape = shape
+        self.size = self.shape[0]
         self.top = 0
         self.bottom = 0
-        #self.data = [0] * self.size
-        self.data = np.zeros(self.size, dtype='f')
+        self.data = np.empty(shape=self.shape, dtype=dtype)
         self.length = 0
 
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def indexes(self):
+        if self.bottom > self.top:
+            return range(0, self.top+1) + range(self.bottom, self.length)
+        else:
+            return range(self.bottom, self.top)
+
+
     #@profile
-    def append(self, element):
-        """ Overwrites the oldest element with """
+    def push(self, element):
+        """ Write new element on top """
         self.data[self.top] = element
 
         """ Increment the size """
         self.length = min(self.length + 1, self.size)
         
-        """ Update the top n bottom indexes """
+        """ Update the top n bottom indexes. shift bottom by 1 in case of it's overwrite """
         self.top = (self.top + 1) % self.size
         if self.top == self.bottom:
             self.bottom = (self.top + 1) % (self.size - 1)
@@ -45,52 +55,35 @@ class RingBuffer():
         #print (self.data, self.bottom, self.top, self.length)
         return top
 
-# rb = RingBuffer(5)
-# rb.push(1)
-# rb.push(2)
-# rb.push(3)
-# rb.push(4)
-# rb.push(5)
-# import pdb; pdb.set_trace()
 
-# """ Some tests """
-# rb.push(6)
-# rb.push(7)
-# rb.push(8)
+""" Some basic tests to compare performance against a ring buffer constructed with dequeue """
+def get_item():
+    return 1#np.ones(shape=(10000, 1))
 
-# rb.pop()
-# rb.pop()
-# rb.pop()
-# rb.pop()
-# rb.pop()
 #@profile
-def buffer_test(buffer, size):
-    #size = 10
-    """ Some performance tests. Compared with python queue """
-    #buffer = deque(maxlen=size)
-    
-    """ do 1000 pushes and 1000 pops """
-    for i in xrange(size):
-        buffer.append(i)
-
-    for i in xrange(size):
-        buffer.pop()
-
 def ring_buffer_test():
-    size = 100000
-    rb = RingBuffer(size)
-    buffer_test(rb, size)
+    size = 1000
+    buffer = RingBuffer(shape=(size, 1))
+    item = get_item()
+    
+    for i in range(1000):
+        buffer.append(i)
+        ind = buffer.indexes()
 
+#@profile
 def dequeue_test():
-    size = 100000
+    size = 1000
     """ Some performance tests. Compared with python queue """
-    buffer = deque(maxlen=size)
+    buffer = deque(np.zeros(size, dtype=np.int), maxlen=size)
+    item = get_item()
 
-    zeta = np.array(buffer)
+    for i in xrange(1000):
+        buffer.append(item)
+        ind = np.array(list(buffer))
 
-    buffer_test(buffer, size)
+def tests():
+    print "Dequeue: %f" % timeit.timeit(dequeue_test, number=100)
+    print "Ring buffer: %f" % timeit.timeit(ring_buffer_test, number=100)
 
-#timeit ringbuff_deque_test()
-#import pdb; pdb.set_trace()
-print "Ring buffer: %f" % timeit.timeit(ring_buffer_test, number=100)
-print "Dequeue: %f" % timeit.timeit(dequeue_test, number=100)
+if __name__ == "__main__":
+    tests()
