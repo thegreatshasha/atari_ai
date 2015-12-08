@@ -67,8 +67,10 @@ def ring_buffer_test():
     item = get_item()
     
     for i in range(1000):
-        buffer.append(i)
+        buffer.push(i)
         ind = buffer.indexes()
+
+    import pdb; pdb.set_trace()
 
 #@profile
 def dequeue_test():

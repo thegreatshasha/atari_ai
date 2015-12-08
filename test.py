@@ -8,16 +8,17 @@ from keras.layers.core import Dense, Activation, Flatten
 from keras.layers.convolutional import Convolution2D
 from keras.optimizers import SGD
 from ring_buffer import RingBuffer
+import time
+import random
+from select_with_probability import select_with_probability
+import matplotlib.pyplot as plt
+from visualize import Plotter
 
 # Create the ale interface and load rom files
 ale = ALEInterface()
 
-# Some common settings
-HISTORY_LENGTH = 4
-
-# Comment this to disable gui
-ale.setBool('display_screen', True)
-pygame.init()
+#ale.setBool('display_screen', True)
+#pygame.init()
 
 # Load the rom
 ale.loadROM('/Users/shashwat/Downloads/space_invaders.bin')
@@ -25,17 +26,28 @@ ale.loadROM('/Users/shashwat/Downloads/space_invaders.bin')
 # These are the set of valid actions in the game
 legal_actions = ale.getMinimalActionSet()
 
-# Run actions over each episode randomly and print reward
-
 # How to get screen rgb?
 width, height = ale.getScreenDims()
 screen_buffer = np.empty((height, width), dtype=np.uint8)
 
+# Some common settings
+HISTORY_LENGTH = 4
+MAX_STEPS = 1000000
+MAX_EPOCHS = 10
+MINIBATCH_SIZE = 32
+LONG_PRESS_TIMES = 4
+GAMMA  = 0.1
+EPSILON = 0.1
+MAX_LIVES = ale.lives()
+
+episode_sum = 0
+episode_sums = []
+
 # Define history variables here
-images = RingBuffer(shape=(1000, 84, 84))
-actions = RingBuffer(shape=(1000, 1))
-rewards = RingBuffer(shape=(1000, 1))
-terminals = RingBuffer(shape=(1000, 1))
+images = RingBuffer(shape=(MAX_STEPS, 84, 84))
+actions = RingBuffer(shape=(MAX_STEPS, 1))
+rewards = RingBuffer(shape=(MAX_STEPS, 1))
+terminals = RingBuffer(shape=(MAX_STEPS, 1))
 
 # Initialize a neural network according to nature paper
 # Defining the neural net architecture
@@ -48,44 +60,152 @@ model.add(Flatten())
 model.add(Dense(256))
 model.add(Activation('relu'))
 model.add(Dense(legal_actions.shape[0]))
-sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+sgd = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-6)
+#sgd = SGD(lr=0.0001, decay=1e-6)
 model.compile(loss='mean_squared_error', optimizer=sgd)
 ## will SGD work with multiple function calls?
 
+# plotter variable
+plotter = Plotter()
 
-# Version1, let it grow, let it grow
-for episode in range(10):
-    total_reward = 0.0
-    
-    # Replace this with fixed time (we can't have loopy episodes)
-    while not ale.game_over():
+## First define prototype of all the functions here
+def get_observation():
+     return get_processed_screen(ale)
 
-        # get best possible action from the current neural network
-        image = get_processed_screen(ale)
-        history = np.array([image]*4)
-        history_batch = np.array([history])
-        prediction = model.predict(history_batch)[0]
-        best_action = legal_actions[np.argmax(prediction)]
+def am_i_dead():
+    # If game over / lives decreased.
+    if ale.lives() < MAX_LIVES or ale.game_over():
+        return True
+    return False
+
+# Choose action from max + random strategy
+def choose_action():
+    image = get_observation()
+    history = np.array([image]*4)
+    history_batch = np.array([history])
+    prediction = model.predict(history_batch)[0]
         
-        # act on the best possible action
-        reward = ale.act(best_action);
-        terminal = 1 if ale.game_over() else 0
-        total_reward += reward
+    best_action = legal_actions[np.argmax(prediction)]
+    random_action = random.choice(legal_actions)
+    
+    action = select_with_probability([random_action, best_action], [EPSILON, 1-EPSILON])
+    
+    return best_action
 
-        # Store everything in the transition table
+def long_press(action):
+    # Repeat an action and return reward
+    reward = 0
+
+    for times in range(LONG_PRESS_TIMES):
+        reward += ale.act(action)
+    
+    reward = np.clip(reward, -1, 1)
+
+    return  reward
+
+# Circular buffer's index is always in a wierd position since bottom, top keep moving as more items are added
+#  Convert it back to 0, max
+def transformed(index, bottom, length):
+    return (index - bottom) % length
+
+def get_random_minibatch():
+    X_batch = []
+    Y_batch = []
+    indexes = images.indexes()
+
+    while len(X_batch) < MINIBATCH_SIZE:
+        random_index = random.choice(indexes)
+        next_index = (random_index+1) % images.length
+        # Transformed index
+        transformed_index = transformed(random_index, images.bottom, images.length) 
+
+        # If the transformde index is not within the necessary range
+        if transformed_index < HISTORY_LENGTH - 1 or transformed_index == transformed(images.top-1, images.bottom, images.length):
+            continue
+
+        #print "bottom: %d, top: %d, random: %d" % (images.bottom, images.top, random_index)
+        state1 = images[random_index-HISTORY_LENGTH+1:random_index+1]
+        state2 = images[random_index-HISTORY_LENGTH+2:random_index+2]
+
+        # If the first state is terminal, it's the end of an episode and transitioning to an episode doesn't make sense
+        if terminals[random_index]:
+            continue
+
+        output1 = get_network_output(state1)
+        output2 = get_network_output(state2)
+        X = state1
+        
+        Y = np.copy(output1)
+        action_index = np.argmax(legal_actions==actions[random_index])
+        
+        # If the subsquent state is terminal, Q_2_a is zero since it's the teminal step
+        #print "Reward %d" % rewards[random_index]
+        if terminals[next_index]:
+            Y[action_index] = rewards[random_index]
+        else:
+            Q_2_a = np.max(output2)
+            #print "Q2a: %d" % Q_2_a
+            Y[action_index] = rewards[random_index] + GAMMA * Q_2_a
+
+        X_batch.append(X)
+        Y_batch.append(Y)
+
+    return np.array(X_batch), np.array(Y_batch)
+        
+
+def get_network_output(state):
+    history_batch = np.array([state])
+    prediction = model.predict(history_batch)[0]
+    return prediction
+
+# Sample minibatcg of transitions and run gradient gradient_descent
+def gradient_descent():
+    if images.length >= MINIBATCH_SIZE:
+        X_batch, Y_batch =  get_random_minibatch()
+        print Y_batch[0]
+        model.fit(X_batch, Y_batch, batch_size=32, nb_epoch=1)
+
+def reset():
+    # Append the latest episode sum
+    global episode_sum
+    global episode_sums
+    episode_sums.append(episode_sum)
+    plotter.write(len(episode_sums), episode_sum)
+    episode_sum = 0
+
+    ale.reset_game()
+    print "Resetting"
+    long_press(0)
+    long_press(0)
+
+# Main loop
+for epoch in range(MAX_EPOCHS):
+    print "New epoch: %d\n" % epoch
+    reset()
+
+    for step in range(MAX_STEPS):
+        # Keep note of the fact that we don't have the concept of an episode unlike nathan's implementation
+        image = get_observation()
+        best_action = choose_action()
+        
+        # get best possible action from the current neural network
         images.push(image)
         actions.push(best_action)
+
+        # If the current state is dead, push 0 reward and mark state as terminal. then reset and continue loop execution
+        if am_i_dead():
+            terminals.push(1)
+            rewards.push(0)
+            reset()
+            continue
+        
+        # Still alive, still alive!
+        terminals.push(0)
+        
+        # long press the best action because humans press keys for longer durations
+        reward = long_press(best_action)
         rewards.push(reward)
-        terminals.push(terminal)
+        episode_sum += reward
 
-        print (images.bottom, images.top)
-        if terminal:
-            import pdb; pdb.set_trace()
-
-        # check if game over
-        #if total_reward != 0:
-        #import pdb; pdb.set_trace()
-
-
-    print("Episode " + str(episode) + " ended with score: " + str(total_reward))
-    ale.reset_game()
+        # Train the network on the existing data
+        gradient_descent()
