@@ -21,7 +21,7 @@ ale = ALEInterface()
 #pygame.init()
 
 # Load the rom
-ale.loadROM('/Users/shashwat/Downloads/space_invaders.bin')
+ale.loadROM('/Users/shashwat/Downloads/pong.bin')
 
 # These are the set of valid actions in the game
 legal_actions = ale.getMinimalActionSet()
@@ -36,8 +36,9 @@ MAX_STEPS = 1000000
 MAX_EPOCHS = 10
 MINIBATCH_SIZE = 32
 LONG_PRESS_TIMES = 4
-GAMMA  = 0.1
+GAMMA  = 0.9
 EPSILON = 0.1
+UPDATE_FREQUENCY = 4
 MAX_LIVES = ale.lives()
 
 episode_sum = 0
@@ -60,13 +61,17 @@ model.add(Flatten())
 model.add(Dense(256))
 model.add(Activation('relu'))
 model.add(Dense(legal_actions.shape[0]))
-sgd = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-6)
+#sgd = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-6)
+adadelta = keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-6)
 #sgd = SGD(lr=0.0001, decay=1e-6)
-model.compile(loss='mean_squared_error', optimizer=sgd)
+model.compile(loss='mean_squared_error', optimizer=adadelta)
 ## will SGD work with multiple function calls?
 
 # plotter variable
 plotter = Plotter()
+
+def epsilon(step):
+    return max((MAX_STEPS - float(step))/MAX_STEPS, 0.1)
 
 ## First define prototype of all the functions here
 def get_observation():
@@ -79,7 +84,7 @@ def am_i_dead():
     return False
 
 # Choose action from max + random strategy
-def choose_action():
+def choose_action(step):
     image = get_observation()
     history = np.array([image]*4)
     history_batch = np.array([history])
@@ -88,17 +93,20 @@ def choose_action():
     best_action = legal_actions[np.argmax(prediction)]
     random_action = random.choice(legal_actions)
     
+    EPSILON = epsilon(step)
     action = select_with_probability([random_action, best_action], [EPSILON, 1-EPSILON])
-    
+    print EPSILON, action
     return best_action
 
 def long_press(action):
     # Repeat an action and return reward
+    global episode_sum
     reward = 0
 
     for times in range(LONG_PRESS_TIMES):
         reward += ale.act(action)
     
+    episode_sum += reward
     reward = np.clip(reward, -1, 1)
 
     return  reward
@@ -186,7 +194,7 @@ for epoch in range(MAX_EPOCHS):
     for step in range(MAX_STEPS):
         # Keep note of the fact that we don't have the concept of an episode unlike nathan's implementation
         image = get_observation()
-        best_action = choose_action()
+        best_action = choose_action(step)
         
         # get best possible action from the current neural network
         images.push(image)
@@ -205,7 +213,7 @@ for epoch in range(MAX_EPOCHS):
         # long press the best action because humans press keys for longer durations
         reward = long_press(best_action)
         rewards.push(reward)
-        episode_sum += reward
 
         # Train the network on the existing data
-        gradient_descent()
+        if step % UPDATE_FREQUENCY == 0:
+            gradient_descent()

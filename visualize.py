@@ -5,18 +5,23 @@ import numpy as np
 import json
 from plotly.graph_objs import *
 import timeit
+from multiprocessing import Pool
+import threading
+
+
+def block(obj):
+        time.sleep(5)
+        print obj
 
 class Plotter:
 
     def __init__(self):
         self.config = {
-            'username': 'thegreatshasha',
-            'api_key': 'vmodg4jjyv',
             'streaming_token': 'xudit15e6d'
         }
 
         self.plot =  p.iplot([{'x': [], 'y': [], 'type': 'scatter', 'mode': 'lines+markers',
-                    'stream': {'token': self.config['streaming_token'], 'maxpoints': 80}
+                    'stream': {'token': self.config['streaming_token'], 'maxpoints': 1000000}
                   }],
                 filename='Time-Series', fileopt='overwrite')
 
@@ -26,14 +31,18 @@ class Plotter:
         self.stream.open()
 
     def write(self, x, y):
-        self.stream.write({'x': x, 'y': y})
+        #self.stream.write({'x': x, 'y': y})
+        thread = threading.Thread(target=self.stream.write, args=({'x':x, 'y':y},))
+        #thread.daemon = True                            # Daemonize thread
+        thread.start()
+        #res = self.pool.apply(block, args=(3,))
 
-# plotly = Plotter()
+plotly = Plotter()
 
-# def tests():
+def tests():
     
-#     for i in range(10):
-#         #print 10, 10
-#         plotly.write(10, 10)
+    for i in range(100):
+        #print 10, 10
+        plotly.write(i, 10+i)
 
-# print timeit.timeit(tests, number=1000)
+print "Execution Time: %f" % timeit.timeit(tests, number=1)
