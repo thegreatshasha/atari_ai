@@ -17,13 +17,13 @@ class Plotter:
 
     def __init__(self):
         self.config = {
-            'streaming_token': 'xudit15e6d'
+            'streaming_token': 'c8rv8cp68b'
         }
-
+        self.plotfile = str(datetime.datetime.now())
         self.plot =  p.iplot([{'x': [], 'y': [], 'type': 'scatter', 'mode': 'lines+markers',
                     'stream': {'token': self.config['streaming_token'], 'maxpoints': 1000000}
                   }],
-                filename='Time-Series', fileopt='overwrite')
+                filename=self.plotfile, fileopt='overwrite')
 
         self.url = self.plot.resource
         print self.url
@@ -31,18 +31,8 @@ class Plotter:
         self.stream.open()
 
     def write(self, x, y):
-        #self.stream.write({'x': x, 'y': y})
-        thread = threading.Thread(target=self.stream.write, args=({'x':x, 'y':y},))
+        self.stream.write({'x': x, 'y': y})
+        #thread = threading.Thread(target=self.stream.write, args=({'x':x, 'y':y},))
         #thread.daemon = True                            # Daemonize thread
-        thread.start()
+        #thread.start()
         #res = self.pool.apply(block, args=(3,))
-
-plotly = Plotter()
-
-def tests():
-    
-    for i in range(100):
-        #print 10, 10
-        plotly.write(i, 10+i)
-
-print "Execution Time: %f" % timeit.timeit(tests, number=1)

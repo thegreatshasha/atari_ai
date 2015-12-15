@@ -13,10 +13,21 @@ import random
 from select_with_probability import select_with_probability
 import matplotlib.pyplot as plt
 from visualize import Plotter
+from games.simple_game import GameManager
 
 # Create the ale interface and load rom files
-ale = ALEInterface()
-
+#ale = ALEInterface()
+ale = GameManager()
+ale.add_object({
+    'dimensions': (1,3,1,1),
+    'type': 'player',
+    'color': (0,255,0)
+})
+ale.add_object({
+    'dimensions': (0,1,1,1),
+    'type': 'enemy',
+    'color': (255,0,0)
+})
 #ale.setBool('display_screen', True)
 #pygame.init()
 
@@ -32,10 +43,10 @@ screen_buffer = np.empty((height, width), dtype=np.uint8)
 
 # Some common settings
 HISTORY_LENGTH = 4
-MAX_STEPS = 1000000
-MAX_EPOCHS = 10
+MAX_STEPS = 10000
+MAX_EPOCHS = 20
 MINIBATCH_SIZE = 32
-LONG_PRESS_TIMES = 4
+LONG_PRESS_TIMES = 1
 GAMMA  = 0.9
 EPSILON = 0.1
 UPDATE_FREQUENCY = 4
@@ -45,7 +56,7 @@ episode_sum = 0
 episode_sums = []
 
 # Define history variables here
-images = RingBuffer(shape=(MAX_STEPS, 84, 84))
+images = RingBuffer(shape=(MAX_STEPS, width, height))
 actions = RingBuffer(shape=(MAX_STEPS, 1))
 rewards = RingBuffer(shape=(MAX_STEPS, 1))
 terminals = RingBuffer(shape=(MAX_STEPS, 1))
@@ -53,15 +64,15 @@ terminals = RingBuffer(shape=(MAX_STEPS, 1))
 # Initialize a neural network according to nature paper
 # Defining the neural net architecture
 model = Sequential()
-model.add(Convolution2D(16, 8, 8, subsample=(4,4), input_shape=(HISTORY_LENGTH,84,84)))
+model.add(Convolution2D(4, 4, 4, subsample=(2,2), input_shape=(HISTORY_LENGTH,width,height)))
 model.add(Activation('relu'))
-model.add(Convolution2D(32, 4, 4, subsample=(2,2)))
+model.add(Convolution2D(8, 2, 2, subsample=(1,1)))
 model.add(Activation('relu'))
 model.add(Flatten())
-model.add(Dense(256))
+model.add(Dense(16))
 model.add(Activation('relu'))
 model.add(Dense(legal_actions.shape[0]))
-#sgd = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-6)
+#rmsp = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-6)
 adadelta = keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-6)
 #sgd = SGD(lr=0.0001, decay=1e-6)
 model.compile(loss='mean_squared_error', optimizer=adadelta)
@@ -70,12 +81,16 @@ model.compile(loss='mean_squared_error', optimizer=adadelta)
 # plotter variable
 plotter = Plotter()
 
-def epsilon(step):
-    return max((MAX_STEPS - float(step))/MAX_STEPS, 0.1)
+def epsilon(step, epoch):
+    if epoch == 0:
+        return max((MAX_STEPS - float(step))/MAX_STEPS, 0.1)
+    else:
+        return 0.1
 
 ## First define prototype of all the functions here
 def get_observation():
-     return get_processed_screen(ale)
+     return ale.getScreenGrayScale()
+     #return get_processed_screen(ale)
 
 def am_i_dead():
     # If game over / lives decreased.
@@ -84,7 +99,7 @@ def am_i_dead():
     return False
 
 # Choose action from max + random strategy
-def choose_action(step):
+def choose_action(step, epoch):
     image = get_observation()
     history = np.array([image]*4)
     history_batch = np.array([history])
@@ -93,9 +108,9 @@ def choose_action(step):
     best_action = legal_actions[np.argmax(prediction)]
     random_action = random.choice(legal_actions)
     
-    EPSILON = epsilon(step)
+    EPSILON = epsilon(step, epoch)
     action = select_with_probability([random_action, best_action], [EPSILON, 1-EPSILON])
-    print EPSILON, action
+    print "Step: %d, Epsilon: %f, Epoch: %d" % (step, EPSILON, epoch)
     return best_action
 
 def long_press(action):
@@ -107,6 +122,7 @@ def long_press(action):
         reward += ale.act(action)
     
     episode_sum += reward
+    print "Episode sum: %d" % episode_sum
     reward = np.clip(reward, -1, 1)
 
     return  reward
@@ -131,9 +147,19 @@ def get_random_minibatch():
         if transformed_index < HISTORY_LENGTH - 1 or transformed_index == transformed(images.top-1, images.bottom, images.length):
             continue
 
+        left = random_index-HISTORY_LENGTH+1
+
+        #if left <= 0:
+        #    import pdb; pdb.set_trace()
+        
         #print "bottom: %d, top: %d, random: %d" % (images.bottom, images.top, random_index)
-        state1 = images[random_index-HISTORY_LENGTH+1:random_index+1]
-        state2 = images[random_index-HISTORY_LENGTH+2:random_index+2]
+        try:
+            state1 = images.get(left, random_index+1)#images[left:random_index+1]
+            state2 = images.get(left+1, random_index+2)
+            #state2 = images[random_index-HISTORY_LENGTH+2:random_index+2]
+        except AttributeError:
+            import pdb; pdb.set_trace()
+            #state1 = images[left:random_index+1]
 
         # If the first state is terminal, it's the end of an episode and transitioning to an episode doesn't make sense
         if terminals[random_index]:
@@ -173,28 +199,28 @@ def gradient_descent():
         print Y_batch[0]
         model.fit(X_batch, Y_batch, batch_size=32, nb_epoch=1)
 
-def reset():
+def reset(epoch):
     # Append the latest episode sum
     global episode_sum
     global episode_sums
     episode_sums.append(episode_sum)
-    plotter.write(len(episode_sums), episode_sum)
+    plotter.write(epoch, episode_sum)
     episode_sum = 0
 
     ale.reset_game()
     print "Resetting"
-    long_press(0)
-    long_press(0)
+    #long_press(0)
+    #long_press(0)
 
 # Main loop
 for epoch in range(MAX_EPOCHS):
     print "New epoch: %d\n" % epoch
-    reset()
+    reset(epoch)
 
     for step in range(MAX_STEPS):
         # Keep note of the fact that we don't have the concept of an episode unlike nathan's implementation
         image = get_observation()
-        best_action = choose_action(step)
+        best_action = choose_action(step, epoch)
         
         # get best possible action from the current neural network
         images.push(image)
@@ -204,7 +230,7 @@ for epoch in range(MAX_EPOCHS):
         if am_i_dead():
             terminals.push(1)
             rewards.push(0)
-            reset()
+            reset(epoch)
             continue
         
         # Still alive, still alive!
@@ -216,4 +242,5 @@ for epoch in range(MAX_EPOCHS):
 
         # Train the network on the existing data
         if step % UPDATE_FREQUENCY == 0:
+            print "umm"
             gradient_descent()

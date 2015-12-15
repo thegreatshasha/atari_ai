@@ -13,8 +13,35 @@ class RingBuffer():
         self.data = np.empty(shape=self.shape, dtype=dtype)
         self.length = 0
 
+    def __getslice__(self, i, j):
+        if i < 0 and j > 0:
+            return np.vstack((self[i+self.length:self.length:], self[0:j:]))
+        else:
+        #if i<=0:
+        #    import pdb; pdb.set_trace()
+        #try:
+            return  self[i:j:]
+        #except AttributeError:
+        #    import pdb; pdb.set_trace()
+        #return data
+
     def __getitem__(self, key):
-        return self.data[key]
+        try:
+            data = self.data[key]
+        except AttributeError:
+            import pdb; pdb.set_trace()
+        return data
+
+    def get(self, i, j):
+        i = i % self.length
+        j = j % self.length
+        if i > j:
+            data = np.vstack((self[i:self.length:], self[0:j:]))
+        else:
+            data = self[i:j:]
+        if data.shape[0] != 4:
+            import pdb; pdb.set_trace()
+        return data
 
     def indexes(self):
         if self.bottom > self.top:
