@@ -49,7 +49,7 @@ screen_buffer = np.empty((height, width), dtype=np.uint8)
 
 # Some common settings
 HISTORY_LENGTH = 4
-MAX_STEPS = 10000
+MAX_STEPS = 100
 MAX_EPOCHS = 20
 MINIBATCH_SIZE = 32
 LONG_PRESS_TIMES = 1
@@ -209,6 +209,7 @@ def get_network_output(state):
     return prediction
 
 # Sample minibatcg of transitions and run gradient gradient_descent
+@profile
 def gradient_descent():
     if images.length >= MINIBATCH_SIZE:
         X_batch, Y_batch =  get_random_minibatch()

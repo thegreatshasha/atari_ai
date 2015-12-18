@@ -69,8 +69,9 @@ class GameManager:
 		return np.repeat(np.repeat(rgb,self.record_zoom,axis=0),self.record_zoom,axis=1)
 	        
 	def recordFrames(self, rgb):
-		self.record_frames.append(self.zoomForRecording(rgb))
-		np.save(self.record_file, self.record_frames)
+		if self.record_frames:
+			self.record_frames.append(self.zoomForRecording(rgb))
+			np.save(self.record_file, self.record_frames)
 			#self.video.run(self.zoomForRecording(rgb))
 
 	def getScreenRGB(self):
