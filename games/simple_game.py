@@ -39,7 +39,7 @@ class GameManager:
 		self.player = None
 		self.actions = [-1, +1]
 
-		self.record = True
+		self.record = False
 		self.record_zoom = 10
 		self.record_frames = []
 
