@@ -14,6 +14,7 @@ from select_with_probability import select_with_probability
 import matplotlib.pyplot as plt
 from visualize import Plotter
 from games.simple_game import GameManager
+import sys
 
 # Create the ale interface and load rom files
 #ale = ALEInterface()
@@ -30,6 +31,11 @@ ale.add_object({
 })
 #ale.setBool('display_screen', True)
 #pygame.init()
+
+# csv hack
+import csv
+fi = open('data.csv', 'w')
+wr = csv.writer(fi, delimiter=',')
 
 # Load the rom
 ale.loadROM('/Users/shashwat/Downloads/pong.bin')
@@ -51,6 +57,9 @@ GAMMA  = 0.9
 EPSILON = 0.1
 UPDATE_FREQUENCY = 4
 MAX_LIVES = ale.lives()
+MODE = sys.argv[1]
+if MODE == "test":
+    MODEL_FILE = sys.argv[2]
 
 episode_sum = 0
 episode_sums = []
@@ -64,7 +73,7 @@ terminals = RingBuffer(shape=(MAX_STEPS, 1))
 # Initialize a neural network according to nature paper
 # Defining the neural net architecture
 model = Sequential()
-model.add(Convolution2D(4, 4, 4, subsample=(2,2), input_shape=(HISTORY_LENGTH,width,height)))
+model.add(Convolution2D(8 , 4, 4, subsample=(2,2), input_shape=(HISTORY_LENGTH,width,height)))
 model.add(Activation('relu'))
 model.add(Convolution2D(8, 2, 2, subsample=(1,1)))
 model.add(Activation('relu'))
@@ -76,10 +85,12 @@ model.add(Dense(legal_actions.shape[0]))
 adadelta = keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-6)
 #sgd = SGD(lr=0.0001, decay=1e-6)
 model.compile(loss='mean_squared_error', optimizer=adadelta)
+if MODE == "test":
+    model.load_weights(MODEL_FILE)
 ## will SGD work with multiple function calls?
 
 # plotter variable
-plotter = Plotter()
+#plotter = Plotter()
 
 def epsilon(step, epoch):
     if epoch == 0:
@@ -107,8 +118,13 @@ def choose_action(step, epoch):
         
     best_action = legal_actions[np.argmax(prediction)]
     random_action = random.choice(legal_actions)
-    
-    EPSILON = epsilon(step, epoch)
+    #EPSILON = 1.0
+    if MODE == "test":
+        EPSILON = 0.0
+    elif MODE == "random":
+        EPSILON = 1.0
+    else:
+        EPSILON = epsilon(step, epoch)
     action = select_with_probability([random_action, best_action], [EPSILON, 1-EPSILON])
     print "Step: %d, Epsilon: %f, Epoch: %d" % (step, EPSILON, epoch)
     return best_action
@@ -123,7 +139,7 @@ def long_press(action):
     
     episode_sum += reward
     print "Episode sum: %d" % episode_sum
-    reward = np.clip(reward, -1, 1)
+    #reward = np.clip(reward, -1, 1)
 
     return  reward
 
@@ -196,15 +212,25 @@ def get_network_output(state):
 def gradient_descent():
     if images.length >= MINIBATCH_SIZE:
         X_batch, Y_batch =  get_random_minibatch()
-        print Y_batch[0]
         model.fit(X_batch, Y_batch, batch_size=32, nb_epoch=1)
+
+def save_weights(epoch, episode_sums, episode_sum):
+    if len(episode_sums) and episode_sum > max(episode_sums):
+        filename = "models/model2_%d_%d.hdf5" % (episode_sum, epoch)
+        model.save_weights(filename)
 
 def reset(epoch):
     # Append the latest episode sum
     global episode_sum
     global episode_sums
+    
+    save_weights(epoch, episode_sums, episode_sum)
+
+
     episode_sums.append(episode_sum)
-    plotter.write(epoch, episode_sum)
+    wr.writerow([epoch, episode_sum])
+    fi.flush()
+    #plotter.write(epoch, episode_sum)
     episode_sum = 0
 
     ale.reset_game()
@@ -220,6 +246,7 @@ for epoch in range(MAX_EPOCHS):
     for step in range(MAX_STEPS):
         # Keep note of the fact that we don't have the concept of an episode unlike nathan's implementation
         image = get_observation()
+        
         best_action = choose_action(step, epoch)
         
         # get best possible action from the current neural network
@@ -240,7 +267,10 @@ for epoch in range(MAX_EPOCHS):
         reward = long_press(best_action)
         rewards.push(reward)
 
+        if MODE == "test":
+            time.sleep(0.1)
+
         # Train the network on the existing data
-        if step % UPDATE_FREQUENCY == 0:
+        if step % UPDATE_FREQUENCY == 0 and MODE=="train":
             print "umm"
             gradient_descent()
