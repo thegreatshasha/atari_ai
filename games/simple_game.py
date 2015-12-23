@@ -1,7 +1,10 @@
+import os
+os.environ['SDL_VIDEODRIVER'] = 'dummy'
+
+import pygame
 import numpy as np
 import random
 import time
-import pygame
 import cv2
 import cv2.cv as cv
 
@@ -9,6 +12,12 @@ import cv2.cv as cv
 def transform(dimensions, factor):
 	#### VERY INEFFICIENT, CHANGE THIS ASAP
 	return tuple([factor*d for d in dimensions])
+
+def pixel2rgb(pixels):
+	red = pixels / 2**16
+	green = (pixels % 2**16) / 2**8
+	blue = (pixels % 2**8)
+	return np.dstack((red, blue, green))
 
 COLORS = {
 	'black': (0,0,0),
@@ -18,7 +27,6 @@ COLORS = {
 
 class GameObject:
 	def __init__(self, config):
-		pygame.init()
 		self.x, self.y, self.width, self.height = config['dimensions']
 		self.type = config['type']
 		self.color = config['color']
@@ -28,12 +36,12 @@ class GameObject:
 
 class GameManager:
 	def __init__(self):
+		pygame.init()
 		self.size = (4,4)
 		self.scalefactor = 10
 		self.transformed_size = transform(self.size, self.scalefactor)
 
 		#self.score = 0
-
 		self.screen = pygame.display.set_mode(self.transformed_size)
 		self.enemies = []
 		self.player = None
@@ -75,13 +83,18 @@ class GameManager:
 			#self.video.run(self.zoomForRecording(rgb))
 
 	def getScreenRGB(self):
-		rgb = pygame.surfarray.pixels3d( self.screen )
+		
+		#rgb = pygame.surfarray.pixels3d( self.screen )
+		rgb  = np.zeros((self.transformed_size + (3,))).astype('uint8')
+		for y in xrange(self.transformed_size[1]):
+			for x in xrange(self.transformed_size[0]):
+				rgb[y,x,:] = [t for t in self.screen.get_at((x,y))][:-1]
+		
 		rgb_transformed = np.flipud(np.rot90(rgb, k=1))
-		return rgb_transformed
+		return rgb
 
 	def getScreenGrayScale(self):
 		rgb = self.getScreenRGB()
-		#import pdb; pdb.set_trace()
 		self.recordFrames(rgb)
 		return np.dot(rgb[...,:3], [0.299, 0.587, 0.144])
 

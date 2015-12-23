@@ -110,8 +110,7 @@ def am_i_dead():
     return False
 
 # Choose action from max + random strategy
-def choose_action(step, epoch):
-    image = get_observation()
+def choose_action(image, step, epoch):
     history = np.array([image]*4)
     history_batch = np.array([history])
     prediction = model.predict(history_batch)[0]
@@ -209,7 +208,6 @@ def get_network_output(state):
     return prediction
 
 # Sample minibatcg of transitions and run gradient gradient_descent
-@profile
 def gradient_descent():
     if images.length >= MINIBATCH_SIZE:
         X_batch, Y_batch =  get_random_minibatch()
@@ -248,7 +246,7 @@ for epoch in range(MAX_EPOCHS):
         # Keep note of the fact that we don't have the concept of an episode unlike nathan's implementation
         image = get_observation()
         
-        best_action = choose_action(step, epoch)
+        best_action = choose_action(image, step, epoch)
         
         # get best possible action from the current neural network
         images.push(image)
