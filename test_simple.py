@@ -11,7 +11,6 @@ from ring_buffer import RingBuffer
 import time
 import random
 from select_with_probability import select_with_probability
-import matplotlib.pyplot as plt
 from visualize import Plotter
 from games.simple_game import GameManager
 import sys
