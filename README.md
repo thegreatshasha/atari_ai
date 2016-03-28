@@ -19,6 +19,7 @@ This agent just sits around doing nothing and hence gets a zero.
 <img src="https://cloud.githubusercontent.com/assets/890250/14069265/4a6bc84a-f4b5-11e5-8f3d-f00cadc44013.gif" alt="Agent1" height="100" align="right"/>
 An agent which oscillates between left and right albeit randomly.
 The agent oscillates a lot right now.
+<br/>
 
 ### 25% accuracy
 <img src="https://cloud.githubusercontent.com/assets/890250/14069264/4a63e86e-f4b5-11e5-9732-e26c0ada86d5.gif" alt="Agent2" height="100" align="right"/>
