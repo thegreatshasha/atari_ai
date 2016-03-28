@@ -15,10 +15,12 @@ The score policy is +1/-30 to weed out the random agents. +1 points for survivin
 <img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Drawing" height="100" align="right"/>. This agent just sits around doing nothing and hence gets a zero.
 
 ### Random agent
-An agent which oscillates between left and right albeit randomly
+An agent which oscillates between left and right albeit randomly. The agent oscillates a lot right now.
 
 ### 25% accuracy
-An agent which has learnt to dodge the red brick some times. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case.
+An agent which has learnt to dodge the red brick some times. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case. It does run into the red brick occasionaly though.
 
 ### 86% accuracy
-An agent which has learnt to dodge the red brick effectively. It get a score of 8698/10000 = 86% accuracy. The agent has learnt that oscillating to and fro heavily is not a really helpful policy and dodges bricks at the last moment like a master samurai!
+An agent which has learnt to dodge the red brick effectively. It get a score of 8698/10000 = 86% accuracy. The agent has learnt that oscillating to and fro heavily is not a really helpful policy and hence is a lot calmer.
+
+It also never runs into the red brick anymore, dodging it like a master samurai.<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Drawing" height="100" align="right"/>
