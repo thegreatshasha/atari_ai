@@ -7,8 +7,7 @@ Python interface instructions are available here
 
 ## The game
 We tested the agent on a really simple game, dodge the brick. The aim of the game is for the green brick to dodge the red brick
-The score policy is +1/-30 to weed out the random agents. +1 points for surviving in each frame and -30 for colliding with the red brick.
-
+The score policy is +1/-30 to weed out the random agents. +1 points for surviving in each frame and -30 for colliding with the red brick and dying.
 
 ## Screenshots
 
@@ -29,3 +28,6 @@ An agent which has learnt to dodge the red brick some times. It gets a score of 
 An agent which has learnt to dodge the red brick effectively. It get a score of 8698/10000 = 86% accuracy. The agent has learnt that oscillating to and fro heavily is not a really helpful policy and hence is a lot calmer.
 
 It also never runs into the red brick anymore, dodging it like a master samurai.
+
+## Running on the rest of atari games
+The agent works with pixel level data and can easily be used on more complex games like space invaders. However the training time will easily be 10 times and you'll need a gpu. And i'm pretty much broke right now so maybe later :)
