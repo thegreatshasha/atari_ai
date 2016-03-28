@@ -9,7 +9,7 @@ Python interface instructions are available here
 The score policy is +1/-30 to weed out the random agents. +1 points for surviving in each frame and -30 for colliding with the red brick.
 
 ## Screenshots
-* A simple agent which does nothing but just sits around: 
+* A simple agent which does nothing but just sits around: [logo]: http://imgur.com/etj6DRP "agent0"
 * An agent which oscillates between left and right randomly:
 * An agent which has learnt to dodge the red brick some times. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case.
 * An agent which has learnt to dodge the red brick effectively. It get a score of 8698/10000 = 86% accuracy. The agent has learnt that oscillating to and fro heavily is not a really helpful policy and dodges bricks at the last moment like a master samurai!
