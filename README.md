@@ -12,7 +12,7 @@ The score policy is +1/-30 to weed out the random agents. +1 points for survivin
 ## Screenshots
 
 ### A simple agent which does nothing but just sits around
-<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Agent0" height="100" align="right"/>
+<img src="https://cloud.githubusercontent.com/assets/890250/14069266/4a6c3ce4-f4b5-11e5-8d87-803b27795cee.gif" alt="Agent0" height="100" align="right"/>
 This agent just sits around doing nothing and hence gets a zero.
 
 ### Random agent
