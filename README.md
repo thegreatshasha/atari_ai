@@ -1,4 +1,4 @@
-# Atari player ai
+# Atari player ai <img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Agent3" height="100" align="right"/>
 Based on the deepmind paper on deep Q reinforcement learning. Learns an optimum action policy from pixel level data.
 
 ## Python interface instructions
