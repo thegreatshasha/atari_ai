@@ -13,13 +13,12 @@ The score policy is +1/-30 to weed out the random agents. +1 points for survivin
 
 ### A simple agent which does nothing but just sits around
 <img src="https://cloud.githubusercontent.com/assets/890250/14069266/4a6c3ce4-f4b5-11e5-8d87-803b27795cee.gif" alt="Agent0" height="100" align="right"/>
-This agent just sits around doing nothing and hence gets a zero.
+This agent just sits around doing nothing. It doesn't take any action, left or right. Looks like someone needs a little motivation in life.
 
 ### Random agent
 <img src="https://cloud.githubusercontent.com/assets/890250/14069265/4a6bc84a-f4b5-11e5-8f3d-f00cadc44013.gif" alt="Agent1" height="100" align="right"/>
 An agent which oscillates between left and right albeit randomly.
 The agent oscillates a lot right now.
-<br/>
 
 ### 25% accuracy
 <img src="https://cloud.githubusercontent.com/assets/890250/14069264/4a63e86e-f4b5-11e5-9732-e26c0ada86d5.gif" alt="Agent2" height="100" align="right"/>
