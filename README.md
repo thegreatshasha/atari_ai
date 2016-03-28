@@ -21,7 +21,7 @@ An agent which oscillates a lot, staying at the same place rougly. It also runs 
 
 ### 25% accuracy
 <img src="https://cloud.githubusercontent.com/assets/890250/14069264/4a63e86e-f4b5-11e5-9732-e26c0ada86d5.gif" alt="Agent2" height="100" align="right"/>
-An agent which has learnt to dodge the red brick some times. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case. It does run into the red brick occasionaly though.
+An agent which tries to move away from the red brick and find a safe spot. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case. It does run into the red brick occasionally though.
 
 ### 86% accuracy
 <img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Agent3" height="100" align="right"/>
