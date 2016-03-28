@@ -12,15 +12,20 @@ The score policy is +1/-30 to weed out the random agents. +1 points for survivin
 ## Screenshots
 
 ### A simple agent which does nothing but just sits around
-<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Drawing" height="100" align="right"/>. This agent just sits around doing nothing and hence gets a zero.
+<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Agent0" height="100" align="right"/>
+This agent just sits around doing nothing and hence gets a zero.
 
 ### Random agent
-<img src="https://cloud.githubusercontent.com/assets/890250/14069265/4a6bc84a-f4b5-11e5-8f3d-f00cadc44013.gif" alt="Drawing" height="100" align="right"/>. An agent which oscillates between left and right albeit randomly. The agent oscillates a lot right now.
+<img src="https://cloud.githubusercontent.com/assets/890250/14069265/4a6bc84a-f4b5-11e5-8f3d-f00cadc44013.gif" alt="Agent1" height="100" align="right"/>
+An agent which oscillates between left and right albeit randomly.
+The agent oscillates a lot right now.
 
 ### 25% accuracy
-<img src="https://cloud.githubusercontent.com/assets/890250/14069264/4a63e86e-f4b5-11e5-9732-e26c0ada86d5.gif" alt="Drawing" height="100" align="right"/>. An agent which has learnt to dodge the red brick some times. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case. It does run into the red brick occasionaly though.
+<img src="https://cloud.githubusercontent.com/assets/890250/14069264/4a63e86e-f4b5-11e5-9732-e26c0ada86d5.gif" alt="Agent2" height="100" align="right"/>
+An agent which has learnt to dodge the red brick some times. It gets a score of 2529/10000 = 25% accuracy. The agent still oscillates a lot but lesser than first case. It does run into the red brick occasionaly though.
 
 ### 86% accuracy
-<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Drawing" height="100" align="right"/>. An agent which has learnt to dodge the red brick effectively. It get a score of 8698/10000 = 86% accuracy. The agent has learnt that oscillating to and fro heavily is not a really helpful policy and hence is a lot calmer.
+<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Agent3" height="100" align="right"/>
+An agent which has learnt to dodge the red brick effectively. It get a score of 8698/10000 = 86% accuracy. The agent has learnt that oscillating to and fro heavily is not a really helpful policy and hence is a lot calmer.
 
 It also never runs into the red brick anymore, dodging it like a master samurai.
