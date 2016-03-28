@@ -5,7 +5,8 @@ Based on the deepmind paper on deep Q reinforcement learning. Learns an optimum 
 Python interface instructions are available here
 [https://github.com/bbitmaster/ale_python_interface/wiki/Code-Tutorial](https://github.com/bbitmaster/ale_python_interface/wiki/Code-Tutorial)
 
-## Score Policy
+## The game
+We tested the agent on a really simple game, dodge the brick. The aim of the game is for the green brick to dodge the red brick
 The score policy is +1/-30 to weed out the random agents. +1 points for surviving in each frame and -30 for colliding with the red brick.
 
 
@@ -17,7 +18,7 @@ This agent just sits around doing nothing. It doesn't take any action, left or r
 
 ### Random agent
 <img src="https://cloud.githubusercontent.com/assets/890250/14069265/4a6bc84a-f4b5-11e5-8f3d-f00cadc44013.gif" alt="Agent1" height="100" align="right"/>
-An agent which oscillates between left and right albeit randomly. The agent oscillates a lot, staying roughly at the same place. It also runs into the red brick a lot.
+An agent which oscillates a lot, staying at the same place rougly. It also runs into the red brick a lot and isn't really being affected by the red brick's presence.
 
 ### 25% accuracy
 <img src="https://cloud.githubusercontent.com/assets/890250/14069264/4a63e86e-f4b5-11e5-9732-e26c0ada86d5.gif" alt="Agent2" height="100" align="right"/>
