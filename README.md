@@ -12,7 +12,7 @@ The score policy is +1/-30 to weed out the random agents. +1 points for survivin
 ## Screenshots
 A simple agent which does nothing but just sits around
 
-<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Drawing" style="height: 100px;"/>
+<img src="https://cloud.githubusercontent.com/assets/890250/14069263/4a602094-f4b5-11e5-8a0e-63a236134841.gif" alt="Drawing" height="100"/>
 
 An agent which oscillates between left and right albeit randomly
 
